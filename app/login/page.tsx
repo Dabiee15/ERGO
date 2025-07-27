@@ -17,13 +17,14 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { user, login } = useAuth();
 
-  const router = useRouter();
+  // const router = useRouter();
 
-  useEffect(() => {
-    if (user && user.emailVerified) {
-      router.push("/onboarding");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (user && user.emailVerified) {
+  //     router.push("/onboarding/connect");
+  //   }
+
+  // }, []);
 
 
 const handleSubmit = async (e: React.FormEvent) => {

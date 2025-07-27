@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { NextResponse } from "next/server";
-import { authAdmin } from "@/lib/dbadmin";
+import { authAdmin, dbAdmin } from "@/lib/dbadmin";
 
 export async function GET() {
   const cookieStore = cookies();
@@ -17,7 +17,7 @@ export async function GET() {
       email: string;
     };
 
-    const userDoc = await authAdmin.firestore.collection("users").doc(decoded.uid).get();
+    const userDoc = await dbAdmin.collection("users").doc(decoded.uid).get();
     const userData = userDoc.data();
 
     return NextResponse.json({ 

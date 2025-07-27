@@ -19,12 +19,26 @@ export async function POST(req: Request) {
     const userCred = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCred.user;
 
+    // await authAdmin.firestore.collection("users").doc(user.uid).set({
+    //   email,
+    //   companyName,
+    //   emailVerified: false,
+    //   createdAt: new Date().toISOString(),
+    // });
     await authAdmin.firestore.collection("users").doc(user.uid).set({
       email,
       companyName,
       emailVerified: false,
+      accountId,
       createdAt: new Date().toISOString(),
-    });
+      onboarding: {
+        connectAccount: true | false,
+        importFile: true | false,
+        completed: true | false
+      },
+
+});
+
 
     await sendEmailVerification(user, {
       url: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,

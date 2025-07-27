@@ -15,7 +15,7 @@ const Dashboard = () => {
   }, [user]);
 
   if (!user) return null;
-
+console.log(user)
   return (
     <div className="p-4">
       <h1 className="text-xl font-semibold">Welcome, {user?.companyName}!</h1>
