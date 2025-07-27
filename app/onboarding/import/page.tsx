@@ -95,7 +95,7 @@ export default function FileUpload() {
       });
 
       alert(`Successfully uploaded ${result.count} records!`);
-      router.push("/dashboard");
+      router.push("/dashboard/overview");
     } catch (error: any) {
       console.error("Upload error:", error);
       alert(error.message || "Something went wrong during upload");
