@@ -8,13 +8,8 @@ const Dashboard = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!user) {
-      router.push("/login"); 
-    }
-  }, [user]);
-
-  if (!user) return null;
+  
+  if (!user) return 'Loading...';
 console.log(user)
   return (
     <div className="p-4">
