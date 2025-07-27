@@ -57,7 +57,7 @@ export default function SignUpPage() {
               Welcome to ERGO
             </h2>
           </div>
-          <p className="text-gray-700 text-center text-lg">AI</p>
+          <p className="text-gray-700 text-center text-lg">A self-regulating autonomous ledger</p>
         </div>
       </div>
 
