@@ -1,3 +1,4 @@
+
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
@@ -8,27 +9,27 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  User
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, dbclient } from "@/lib/dbclient";
 
-interface AuthUser extends User {
+type User = {
+  uid: string;
+  email: string;
   companyName?: string;
-  onboarding?: {
-    connectAccount?: boolean;
-    importFile?: boolean;
-  };
-}
+  emailVerified?: boolean;
+  user: any;
+};
 
-interface AuthContextValue {
-  user: AuthUser | null;
+type AuthContextValue = {
+  user: User | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (email: string, password: string, companyName: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   loading: boolean;
-  getIdToken: () => Promise<string>;
-}
+  refreshUser: () => Promise<void>;
+  getIdToken: () => Promise<void>;
+};
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
@@ -36,72 +37,73 @@ const AuthContext = createContext<AuthContextValue>({
   signup: async () => ({ success: false }),
   logout: async () => {},
   loading: true,
-  getIdToken: async () => "",
+  refreshUser: async () => {},
+  getIdToken: async () => { {success: false} },
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const userDoc = await getDoc(doc(dbclient, "users", firebaseUser.uid));
-        const userData = userDoc.data();
-        
-        const authUser: AuthUser = {
-          ...firebaseUser,
-          companyName: userData?.companyName,
-          onboarding: userData?.onboarding
-        };
-        
-        setUser(authUser);
-        localStorage.setItem("authUser", JSON.stringify(authUser));
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("/api/auth/currentuser", {
+        credentials: "include",
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        console.log(data)
+        setUser(data.user || null);
       } else {
         setUser(null);
-        localStorage.removeItem("authUser");
       }
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const userDoc = await getDoc(doc(dbclient, "users", userCredential.user.uid));
-      const userData = userDoc.data();
-
-      const authUser: AuthUser = {
-        ...userCredential.user,
-        companyName: userData?.companyName,
-        onboarding: userData?.onboarding
-      };
-
-      setUser(authUser);
-      localStorage.setItem("authUser", JSON.stringify(authUser));
-
-      if (!userData?.onboarding?.connectAccount) {
-        router.push("/onboarding/connect");
-      } else if (!userData?.onboarding?.importFile) {
-        router.push("/onboarding/import");
-      } else {
-        router.push("/dashboard");
-      }
-
-      return { success: true };
-    } catch (error: any) {
-      toast.error(error.message || "Login failed");
-      return { success: false, error: error.message };
+    } catch (err) {
+      console.error("AuthContext fetch error:", err);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-    const signup = async (email: string, password: string, companyName: string) => {
+  const refreshUser = async () => {
+    await fetchUser();
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const login = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      refreshUser()
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
+      console.log(data)
+      setUser(data.user);
+      router.push("/dashboard");
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Login failed";
+      toast.error(message);
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
+
+  };
+
+  const signup = async (email: string, password: string, companyName: string) => {
     try {
       setLoading(true);
       const res = await fetch("/api/auth/signup", {
@@ -129,11 +131,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       setLoading(true);
-      await auth.signOut();
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
       setUser(null);
-      localStorage.removeItem("authUser");
       router.push("/login");
     } catch (error) {
+      console.error("Logout failed:", error);
       toast.error("Logout failed. Please try again.");
     } finally {
       setLoading(false);
@@ -150,6 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+
 }
 
 export const useAuth = () => useContext(AuthContext);

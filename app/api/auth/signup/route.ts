@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     // Send verification email
     try {
       const actionCodeSettings = {
-        url: `${process.env.NEXT_PUBLIC_BASE_URL}/verify-email?from=signup`,
+        url: `${process.env.NEXT_PUBLIC_BASE_URL}/login`,
         handleCodeInApp: true,
       };
       

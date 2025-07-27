@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       { 
         uid: user.uid, 
         email: user.email,
-        // Add any additional user data you want to include in the JWT
+        user
       },
       process.env.JWT_SECRET!,
       { expiresIn: "72h" }
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       user: {
         uid: user.uid,
         email: user.email,
-        user,
+        token
       } 
     });
 
@@ -64,64 +64,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: err.message || "Login failed" }, { status: 500 });
   }
 }
-
-// import { auth } from "@/lib/dbclient";
-// import { signInWithEmailAndPassword } from "firebase/auth";
-// import { rateLimiter } from "@/lib/rate";
-// import { NextResponse } from "next/server";
-
-// export async function POST(req: Request) {
-//   try {
-//     const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-//     await rateLimiter.consume(ip);
-    
-//     const { email, password } = await req.json();
-    
-//     if (!email || !password) {
-//       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
-//     }
-    
-//     const userCred = await signInWithEmailAndPassword(auth, email, password);
-//     const user = userCred.user;
-    
-//     if (!user.emailVerified) {
-//       return NextResponse.json(
-//         { error: "Email not verified. Please check your inbox." },
-//         { status: 401 }
-//       );
-//     }
-
-//     // Get Firebase ID token instead of creating custom JWT
-//     const idToken = await user.getIdToken();
-    
-//     const response = NextResponse.json({ 
-//       user: {
-//         uid: user.uid,
-//         email: user.email,
-//         company: user.companyName
-//       } 
-//     });
-    
-//     // Set Firebase ID token as cookie
-//     response.cookies.set({
-//       name: "idToken", // Changed from "session" to match your upload route
-//       value: idToken,
-//       maxAge: 60 * 60 * 1, // 1 hour (Firebase ID tokens expire after 1 hour)
-//       path: "/",
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "lax",
-//     });
-    
-//     return response;
-    
-//   } catch (err: any) {
-//     console.error("🚨 Login API Error:", err);
-    
-//     if (err.code === "auth/wrong-password" || err.code === "auth/user-not-found") {
-//       return NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
-//     }
-    
-//     return NextResponse.json({ error: err.message || "Login failed" }, { status: 500 });
-//   }
-// }
