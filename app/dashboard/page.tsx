@@ -12,7 +12,7 @@ const Dashboard = () => {
   if (!user) return 'Loading...';
 console.log(user)
   return (
-    <div className="p-4">
+    <div className="p-4 h-screen">
       <h1 className="text-xl font-semibold">Welcome, {user?.companyName}!</h1>
       <p>Company: {user?.email || "N/A"}</p>
       <p>User ID: {user?.uid}</p>

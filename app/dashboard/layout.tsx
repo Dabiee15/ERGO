@@ -17,7 +17,7 @@ export default function DashboardLayout({
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+          className="fixed inset-0 bg-black h-screen bg-opacity-50 z-20 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

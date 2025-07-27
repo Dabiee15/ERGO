@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       console.log(data)
       setUser(data.user);
-      router.push("/dashboard");
+      router.push("/onboarding/connect");
       return { success: true };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Login failed";
