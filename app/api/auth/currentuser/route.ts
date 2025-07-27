@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { authAdmin, dbAdmin } from "@/lib/dbadmin";
 
 export async function GET() {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const session = cookieStore.get("session");
 
   if (!session?.value) {
