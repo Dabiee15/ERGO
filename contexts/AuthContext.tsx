@@ -101,43 +101,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, companyName: string) => {
+    const signup = async (email: string, password: string, companyName: string) => {
     try {
       setLoading(true);
-      
-      // Create Firebase auth user
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Create user document in Firestore
-      await setDoc(doc(dbclient, "users", userCredential.user.uid), {
-        email,
-        companyName,
-        createdAt: new Date(),
-        onboarding: {
-          connectAccount: false,
-          importFile: false
-        }
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, companyName }),
       });
 
-      const authUser: AuthUser = {
-        ...userCredential.user,
-        companyName,
-        onboarding: {
-          connectAccount: false,
-          importFile: false
-        }
-      };
+      const data = await res.json();
 
-      setUser(authUser);
-      localStorage.setItem("authUser", JSON.stringify(authUser));
-      
-      // Redirect to first onboarding step
-      router.push("/login");
-      
+      if (!res.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+
       return { success: true };
-    } catch (error: any) {
-      toast.error(error.message || "Signup failed");
-      return { success: false, error: error.message };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Signup failed";
+      toast.error(message);
+      return { success: false, error: message };
     } finally {
       setLoading(false);
     }
